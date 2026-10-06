@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" style="--tint-rot: 83deg; --tint-sat: 3.0; --tint-bri: 0.6652; --void: #000000; --phos: #46c92c; --acid: #db29d5; --ink: #ffffff; --line: rgba(70,201,44,0.24); --display: 'Silkscreen',ui-monospace,monospace; --mono: 'Press Start 2P',ui-monospace,'Courier New',monospace; --base: 15px;"><head>
+<html lang="pt-BR" style="--tint-rot: 83deg; --tint-sat: 3.0; --tint-bri: 0.6652; --void: #000000; --phos: #46c92c; --acid: #db29d5; --ink: #ffffff; --line: rgba(70,201,44,0.24); --line-acid: rgba(219,41,213,0.38); --display: 'Silkscreen',ui-monospace,monospace; --mono: 'Press Start 2P',ui-monospace,'Courier New',monospace; --base: 15px;"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -149,14 +149,15 @@ textarea{resize:vertical;min-height:90px;line-height:1.5}
 
 .gate{text-align:center}
 .lockart{font-family:var(--display);font-size:40px;color:var(--phos);opacity:.5;margin-bottom:10px}
-.tally{margin-top:26px;border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:var(--phos);opacity:.8}
-.tally ul{padding:0;margin:8px 0 0}
-.tally li{list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:1px dotted var(--line);padding:6px 0}
-.tally li span:first-child{min-width:0;overflow-wrap:anywhere}
-.tally li span:last-child{white-space:nowrap;flex:0 0 auto}
-.tcell{font-variant-numeric:tabular-nums}
-.tally li.ttotal{border-bottom:none;border-top:1px solid var(--line);margin-top:4px;padding-top:10px;color:var(--acid)}
-.tally li.ttotal span{font-family:var(--display);font-size:11px;letter-spacing:1px;color:var(--acid);opacity:1}
+.tally{margin-top:26px;border-top:1px solid var(--line);padding-top:16px;color:var(--phos);opacity:.95}
+.tally-cap{font-family:var(--display);font-size:11px;letter-spacing:2px;color:var(--phos);opacity:.7;text-align:center;display:block}
+.tally ul{padding:0;margin:10px 0 0;list-style:none}
+.tally li{list-style:none;text-align:center;padding:18px 6px;border-bottom:1px solid var(--line-acid,var(--line))}
+.tally li:last-child{border-bottom:none;padding-bottom:4px}
+.t-name{display:block;font-size:15px;line-height:1.45;color:var(--ink);overflow-wrap:break-word;word-break:normal;hyphens:none;max-width:34ch;margin:0 auto}
+.t-time{display:block;margin-top:10px;font-family:var(--display);font-size:clamp(15px,4.6vw,19px);
+  color:var(--phos);font-variant-numeric:tabular-nums;white-space:nowrap}
+.t-pts{display:block;margin-top:6px;font-family:var(--display);font-size:12px;letter-spacing:1px;color:var(--acid);white-space:nowrap}
 .big-score{white-space:nowrap;font-family:var(--display);font-size:clamp(30px,10vw,54px);color:var(--acid);text-align:center;margin:10px 0 2px}
 .big-time{white-space:nowrap;font-family:var(--display);font-size:clamp(20px,6.4vw,32px);color:var(--phos);
   text-align:center;margin:0;font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(77,255,158,.35)}
@@ -468,6 +469,7 @@ function applyTheme(){
   r.setProperty("--acid",t.acid);
   r.setProperty("--ink",t.ink);
   r.setProperty("--line",hexa(t.phos,.24));
+  r.setProperty("--line-acid",hexa(t.acid,.38));
   r.setProperty("--display","'"+t.fontDisplay+"',ui-monospace,monospace");
   r.setProperty("--mono","'"+t.fontBody+"',ui-monospace,'Courier New',monospace");
   r.setProperty("--base",t.baseSize+"px");
@@ -704,7 +706,10 @@ function endHTML(live){
   const rows=state.cfg.riddles.filter(r=>!r.entry).map((r,i)=>{
     const p=live?(state.progress[r.id]||{}):{points:10,elapsed:(i+1)*41200};
     const e=live?elapsedOf(p):p.elapsed;
-    return `<li><span>${i+1}. ${rich(r.title)}</span><span class="tcell">${e==null?"":fmtElapsed(e)+" · "}${p.points||0} pts</span></li>`;
+    const pt=p.points||0;
+    return `<li><span class="t-name">${i+1}. ${rich(r.title)}</span>`+
+      (e==null?"":`<span class="t-time">${fmtElapsed(e)}</span>`)+
+      `<span class="t-pts">${pt} ${pt===1?"ponto":"pontos"}</span></li>`;
   }).join("");
   const score=live?totalScore():state.cfg.riddles.filter(r=>!r.entry).length*10;
   const tot=live?totalElapsed():state.cfg.riddles.filter(r=>!r.entry).reduce((a,x,i)=>a+(i+1)*41200,0);
@@ -715,7 +720,7 @@ function endHTML(live){
       <div class="big-score">${score} PTS</div>
       ${totBlock}
       <p>${rich(t.endText)}</p>
-      <div class="tally">${rich(t.endTally)}<ul>${rows}</ul></div>
+      <div class="tally"><span class="tally-cap">${rich(t.endTally)}</span><ul>${rows}</ul></div>
       <div class="row" style="margin-top:18px;justify-content:center"><button class="btn ghost" ${live?'id="home"':""}>${rich(t.endHome)}</button></div>
     </section>`;
 }
@@ -1674,7 +1679,7 @@ syncSound();
 Rain.start();
 refreshHud();
 renderWelcome();
-</script><audio src="blob:null/bf27e565-f6af-455a-9a92-5fbd1b9720ef" loop="" playsinline="" webkit-playsinline="" preload="auto" style="position: fixed; width: 1px; height: 1px; opacity: 0; pointer-events: none; left: -10px; top: -10px;"></audio>
+</script><audio src="blob:null/9677346c-0424-4698-b76c-2231a0dc6441" loop="" playsinline="" webkit-playsinline="" preload="auto" style="position: fixed; width: 1px; height: 1px; opacity: 0; pointer-events: none; left: -10px; top: -10px;"></audio>
 
 
 </body></html>
